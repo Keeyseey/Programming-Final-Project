@@ -1,0 +1,74 @@
+from tkinter import *
+from time import strftime
+import datetime
+import tkinter.messagebox
+
+alarm_active = False
+alarm_time = ""
+
+def update_clock():
+    current_time = datetime.datetime.now().strftime("%I:%M:%S %p")
+    time_label.config(text=current_time)
+    current_day = datetime.datetime.now().strftime("%A")
+    day_label.config(text=current_day)
+    current_date = datetime.datetime.now().strftime("%B %d, %Y")
+    date_label.config(text=current_date)
+    window.after(1000, update_clock)
+
+def update_alarm():
+    if alarm_active:
+        check_alarm()
+        window.after(1000, update_alarm)
+
+def set_alarm():
+    global alarm_active, alarm_time
+    alarm_time = entry_alarm.get()
+    try:
+        datetime.datetime.strptime(alarm_time, "%I:%M %p")
+        alarm_active = True
+        update_alarm()
+    except ValueError:
+        tkinter.messagebox.showerror("Error", "Invalid time format. Please enter time in HH:MM AM/PM format.")
+
+def stop_alarm():
+    global alarm_active
+    alarm_active = False
+
+def check_alarm():
+    current_time = datetime.datetime.now().strftime("%I:%M %p")
+    if current_time == alarm_time:
+        alarm_window = tkinter.Toplevel(window)
+        alarm_window.title("Alarm")
+        alarm_window.geometry("320x250")
+        alarm_window.attributes('-topmost', True)
+        alarm_label = Label(alarm_window, text="Wake up!", font=("Arial", 20))
+        alarm_label.pack()
+        snooze_button = Button(alarm_window, text="Snooze", font=("Arial", 15), command=snooze_alarm)
+        snooze_button.pack()
+        stop_button = Button(alarm_window, text="Stop", font=("Arial", 15), command=stop_alarm)
+        stop_button.pack()
+
+def snooze_alarm():
+    global alarm_time
+    snooze_time = (datetime.datetime.now() + datetime.timedelta(minutes=5)).strftime("%I:%M %p")
+    alarm_time = snooze_time
+
+window = Tk()
+
+time_label = Label(window, font=("Arial", 50), fg="#00FF00", bg="black")
+time_label.pack()
+
+day_label = Label(window, font=("Ink Free", 25))
+day_label.pack()
+
+date_label = Label(window, font=("Ink Free", 30))
+date_label.pack()
+
+entry_alarm = Entry(window, font=("Arial", 20))
+entry_alarm.pack()
+
+button_set_alarm = Button(window, text="Set Alarm", font=("Arial", 20), command=set_alarm)
+button_set_alarm.pack()
+
+update_clock()
+window.mainloop()
